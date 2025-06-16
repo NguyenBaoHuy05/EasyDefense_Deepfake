@@ -27,23 +27,23 @@ import torch.nn.functional as F
 
 class TrainLoop:
     def __init__(
-            self,
-            *,
-            model,
-            diffusion,
-            data,
-            batch_size,
-            microbatch,
-            lr,
-            ema_rate,
-            log_interval,
-            save_interval,
-            resume_checkpoint,
-            use_fp16=False,
-            fp16_scale_growth=1e-3,
-            schedule_sampler=None,
-            weight_decay=0.0,
-            lr_anneal_steps=0,
+        self,
+        *,
+        model,
+        diffusion,
+        data,
+        batch_size,
+        microbatch,
+        lr,
+        ema_rate,
+        log_interval,
+        save_interval,
+        resume_checkpoint,
+        use_fp16=False,
+        fp16_scale_growth=1e-3,
+        schedule_sampler=None,
+        weight_decay=0.0,
+        lr_anneal_steps=0,
     ):
         self.model = model
         self.diffusion = diffusion
@@ -79,7 +79,9 @@ class TrainLoop:
         )
 
         self.opt = AdamW(
-            self.mp_trainer.master_params, lr=self.lr, weight_decay=self.weight_decay
+            self.mp_trainer.master_params,
+            lr=self.lr,
+            weight_decay=self.weight_decay,
         )
         if self.resume_step:
             self._load_optimizer_state()
@@ -113,17 +115,23 @@ class TrainLoop:
             self.use_ddp = False
             self.ddp_model = self.model
 
-        netArc_checkpoint = torch.load('./models/arcface_checkpoint.tar')
-        netArc = netArc_checkpoint['model'].module
-        self.netArc = netArc.to('cuda').eval()
+        netArc_checkpoint = torch.load(
+            "./models/arcface_checkpoint.tar", weights_only=False
+        )
+        netArc = netArc_checkpoint["model"].module
+        self.netArc = netArc.to("cuda").eval()
 
     def _load_and_sync_parameters(self):
         resume_checkpoint = find_resume_checkpoint() or self.resume_checkpoint
 
         if resume_checkpoint:
-            self.resume_step = parse_resume_step_from_filename(resume_checkpoint)
+            self.resume_step = parse_resume_step_from_filename(
+                resume_checkpoint
+            )
             if dist.get_rank() == 0:
-                logger.log(f"loading model from checkpoint: {resume_checkpoint}...")
+                logger.log(
+                    f"loading model from checkpoint: {resume_checkpoint}..."
+                )
                 self.model.load_state_dict(
                     dist_util.load_state_dict(
                         resume_checkpoint, map_location=dist_util.dev()
@@ -136,14 +144,18 @@ class TrainLoop:
         ema_params = copy.deepcopy(self.mp_trainer.master_params)
 
         main_checkpoint = find_resume_checkpoint() or self.resume_checkpoint
-        ema_checkpoint = find_ema_checkpoint(main_checkpoint, self.resume_step, rate)
+        ema_checkpoint = find_ema_checkpoint(
+            main_checkpoint, self.resume_step, rate
+        )
         if ema_checkpoint:
             if dist.get_rank() == 0:
                 logger.log(f"loading EMA from checkpoint: {ema_checkpoint}...")
                 state_dict = dist_util.load_state_dict(
                     ema_checkpoint, map_location=dist_util.dev()
                 )
-                ema_params = self.mp_trainer.state_dict_to_master_params(state_dict)
+                ema_params = self.mp_trainer.state_dict_to_master_params(
+                    state_dict
+                )
 
         dist_util.sync_params(ema_params)
         return ema_params
@@ -154,7 +166,9 @@ class TrainLoop:
             bf.dirname(main_checkpoint), f"opt{self.resume_step:06}.pt"
         )
         if bf.exists(opt_checkpoint):
-            logger.log(f"loading optimizer state from checkpoint: {opt_checkpoint}")
+            logger.log(
+                f"loading optimizer state from checkpoint: {opt_checkpoint}"
+            )
             state_dict = dist_util.load_state_dict(
                 opt_checkpoint, map_location=dist_util.dev()
             )
@@ -162,8 +176,8 @@ class TrainLoop:
 
     def run_loop(self):
         while (
-                not self.lr_anneal_steps
-                or self.step + self.resume_step < self.lr_anneal_steps
+            not self.lr_anneal_steps
+            or self.step + self.resume_step < self.lr_anneal_steps
         ):
             batch, cond = next(self.data)
 
@@ -173,7 +187,10 @@ class TrainLoop:
             if self.step % self.save_interval == 0:
                 self.save()
                 # Run for a finite amount of time in integration tests.
-                if os.environ.get("DIFFUSION_TRAINING_TEST", "") and self.step > 0:
+                if (
+                    os.environ.get("DIFFUSION_TRAINING_TEST", "")
+                    and self.step > 0
+                ):
                     return
             self.step += 1
         # Save the last checkpoint if it wasn't already saved.
@@ -192,13 +209,15 @@ class TrainLoop:
         self.mp_trainer.zero_grad()
         for i in range(0, batch.shape[0], self.microbatch):
             # [4, 3, 256, 256], {}
-            micro = batch[i: i + self.microbatch].to(dist_util.dev())
+            micro = batch[i : i + self.microbatch].to(dist_util.dev())
             micro_cond = {
-                k: v[i: i + self.microbatch].to(dist_util.dev())
+                k: v[i : i + self.microbatch].to(dist_util.dev())
                 for k, v in cond.items()
             }
             last_batch = (i + self.microbatch) >= batch.shape[0]
-            t, weights = self.schedule_sampler.sample(micro.shape[0], dist_util.dev())
+            t, weights = self.schedule_sampler.sample(
+                micro.shape[0], dist_util.dev()
+            )
 
             src = F.interpolate(micro, (112, 112))
             src_id = self.netArc(src)
@@ -224,7 +243,9 @@ class TrainLoop:
                     t, losses["loss"].detach()
                 )
 
-            loss = (losses["loss"] * weights).mean() + (losses["id"] * 0.01).mean()
+            loss = (losses["loss"] * weights).mean() + (
+                losses["id"] * 0.01
+            ).mean()
             log_loss_dict(
                 self.diffusion, t, {k: v * weights for k, v in losses.items()}
             )
@@ -244,7 +265,9 @@ class TrainLoop:
 
     def log_step(self):
         logger.logkv("step", self.step + self.resume_step)
-        logger.logkv("samples", (self.step + self.resume_step + 1) * self.global_batch)
+        logger.logkv(
+            "samples", (self.step + self.resume_step + 1) * self.global_batch
+        )
 
     def save(self):
         def save_checkpoint(rate, params):
@@ -254,8 +277,12 @@ class TrainLoop:
                 if not rate:
                     filename = f"model{(self.step + self.resume_step):06d}.pt"
                 else:
-                    filename = f"ema_{rate}_{(self.step + self.resume_step):06d}.pt"
-                with bf.BlobFile(bf.join(get_blob_logdir(), filename), "wb") as f:
+                    filename = (
+                        f"ema_{rate}_{(self.step + self.resume_step):06d}.pt"
+                    )
+                with bf.BlobFile(
+                    bf.join(get_blob_logdir(), filename), "wb"
+                ) as f:
                     th.save(state_dict, f)
 
         save_checkpoint(0, self.mp_trainer.master_params)
@@ -264,8 +291,11 @@ class TrainLoop:
 
         if dist.get_rank() == 0:
             with bf.BlobFile(
-                    bf.join(get_blob_logdir(), f"opt{(self.step + self.resume_step):06d}.pt"),
-                    "wb",
+                bf.join(
+                    get_blob_logdir(),
+                    f"opt{(self.step + self.resume_step):06d}.pt",
+                ),
+                "wb",
             ) as f:
                 th.save(self.opt.state_dict(), f)
 
@@ -313,6 +343,8 @@ def log_loss_dict(diffusion, ts, losses):
     for key, values in losses.items():
         logger.logkv_mean(key, values.mean().item())
         # Log the quantiles (four quartiles, in particular).
-        for sub_t, sub_loss in zip(ts.cpu().numpy(), values.detach().cpu().numpy()):
+        for sub_t, sub_loss in zip(
+            ts.cpu().numpy(), values.detach().cpu().numpy()
+        ):
             quartile = int(4 * sub_t / diffusion.num_timesteps)
             logger.logkv_mean(f"{key}_q{quartile}", sub_loss)
