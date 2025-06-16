@@ -111,7 +111,6 @@ class ImageEditor:
             torch.load(
                 "checkpoints/Model.pt",
                 map_location="cpu",
-                weights_only=False,
             )
         )
         self.model.requires_grad_(False).eval().to(self.device)

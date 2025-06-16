@@ -11,7 +11,6 @@ class Gaze_estimator(nn.Module):
         self.checkpoint = torch.load(
             "checkpoints/GazeEstimator.pt",
             map_location=self.device,
-            weights_only=False,
         )
         self.nstack = self.checkpoint["nstack"]
         self.nfeatures = self.checkpoint["nfeatures"]

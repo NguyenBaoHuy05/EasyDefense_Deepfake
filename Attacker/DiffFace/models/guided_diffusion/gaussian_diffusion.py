@@ -180,9 +180,7 @@ class GaussianDiffusion:
             / (1.0 - self.alphas_cumprod)
         )
 
-        netArc_checkpoint = torch.load(
-            "./checkpoints/Arcface.tar", weights_only=False
-        )
+        netArc_checkpoint = torch.load("./checkpoints/Arcface.tar")
         netArc = netArc_checkpoint["model"].module
         self.netArc = netArc.to("cuda").eval()
 

@@ -115,9 +115,7 @@ class TrainLoop:
             self.use_ddp = False
             self.ddp_model = self.model
 
-        netArc_checkpoint = torch.load(
-            "./models/arcface_checkpoint.tar", weights_only=False
-        )
+        netArc_checkpoint = torch.load("./models/arcface_checkpoint.tar")
         netArc = netArc_checkpoint["model"].module
         self.netArc = netArc.to("cuda").eval()
 
