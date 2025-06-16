@@ -42,7 +42,7 @@ class CheckpointIO(object):
         assert os.path.exists(fname), fname + " does not exist!"
         print("Loading checkpoint from %s..." % fname)
         if torch.cuda.is_available():
-            module_dict = torch.load(fname, weight_only=False)
+            module_dict = torch.load(fname, weights_only=False)
         else:
             module_dict = torch.load(fname, map_location=torch.device("cpu"))
         for name, module in self.module_dict.items():
