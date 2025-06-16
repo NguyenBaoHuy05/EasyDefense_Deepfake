@@ -502,7 +502,7 @@ class ImageEditor:
                                 self.args.output_path, self.args.output_file
                             )
                         )
-                        visualization_path = visualization_path.with_stem(
+                        visualization_path = visualization_path.with_name(
                             f"{visualization_path.stem}_i_{iteration_number}_b_{0}"
                         )
                         pred_src_mask = pred_image.add(1).div(2).clamp(0, 1)
