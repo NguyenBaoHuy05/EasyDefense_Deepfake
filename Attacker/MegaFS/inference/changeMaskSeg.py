@@ -23,17 +23,20 @@ label = {
     "hair": 17,
     "hat": 18,
 }
-for file in os.listdir("mask"):
-    if file.endswith(".png"):
-        file_path = os.path.join("mask", file)
+for files in os.listdir("mask"):
+    if files.endswith(".png"):
+        file_path = os.path.join("mask", files)
         face = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
         segmentation = np.zeros_like(face, dtype=np.uint8)
-    break
-for file in os.listdir("mask"):
-    if file.endswith(".png"):
-        file_path = os.path.join("mask", file)
+        break
+for files in os.listdir("mask"):
+    if files.endswith(".png"):
+        file_name = os.path.basename(files)
+        split_pos = file_name.find("_")
+        idx = file_name[:split_pos]
+        att = file_name[split_pos + 1 :].split(".")[0]
+
+        file_path = os.path.join("mask", files)
         imgs = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
-        idx, att = file_path.split("_")
-        att = att.split(".")[0]
         segmentation[imgs == 255] = label[att]
 cv2.imwrite(f"maskSeg/{int(idx)}.png", segmentation)
