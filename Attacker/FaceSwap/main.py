@@ -11,8 +11,8 @@ from torchvision.utils import save_image, make_grid
 from torchvision.transforms import functional as TF
 from torch.utils.data import DataLoader
 from diffusers import ControlNetModel, DDIMScheduler
-from ldm.src.diffusers.pipelines.controlnet.pipeline_controlnet_inpaint_face import (
-    StableDiffusionControlNetFaceInpaintPipeline,
+from diffusers.pipelines.controlnet.pipeline_controlnet_inpaint import (
+    StableDiffusionControlNetInpaintPipeline,
 )
 from transformers import CLIPVisionModelWithProjection, CLIPImageProcessor
 from lora_diffusion import patch_pipe, tune_lora_scale
@@ -108,7 +108,7 @@ if __name__ == "__main__":
     device = "cuda"
     netArc_checkpoint = "checkpoints/arcface_checkpoint.tar"
     netArc_checkpoint = torch.load(
-        netArc_checkpoint, map_location=torch.device("cpu")
+        netArc_checkpoint, map_location=torch.device("cpu"), weights_only=False
     )
     netArc = netArc_checkpoint
     netArc = netArc.to(device).eval()
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         subfolder="models/image_encoder",
         torch_dtype=torch.float32,
     ).to("cuda")
-    pipe = StableDiffusionControlNetFaceInpaintPipeline.from_pretrained(
+    pipe = StableDiffusionControlNetInpaintPipeline.from_pretrained(
         "runwayml/stable-diffusion-v1-5",
         controlnet=[controlnet_canny, controlnet_face],
         image_encoder=image_encoder,
