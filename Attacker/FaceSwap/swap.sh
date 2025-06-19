@@ -6,13 +6,14 @@ accelerate launch main.py \
   --output_dir=$OUTPUT_DIR \
   --output_format=both \
   --instance_prompt="a photo of sks person" \
-  --resolution=512 \
+  --resolution=256 \
   --train_batch_size=1 \
   --learning_rate=1e-4 \
   --lr_scheduler="constant" \
   --max_train_steps=300 \
   --seed="404" \
   --mixed_precision=no \
-  --num_class_images=20 \
+  --num_class_images=0 \
   --src_dir="./data/src" \
-  --targ_dir="./data/targ"
+  --targ_dir="./data/targ"\
+  --class_data_dir="./data/class-person" \
