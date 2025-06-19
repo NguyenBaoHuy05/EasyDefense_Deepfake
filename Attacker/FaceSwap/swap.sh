@@ -10,9 +10,9 @@ accelerate launch main.py \
   --train_batch_size=1 \
   --learning_rate=1e-4 \
   --lr_scheduler="constant" \
-  --max_train_steps=200 \
+  --max_train_steps=300 \
   --seed="404" \
   --mixed_precision=no \
-  --num_class_images=200 \
+  --num_class_images=20 \
   --src_dir="./data/src" \
   --targ_dir="./data/targ"
