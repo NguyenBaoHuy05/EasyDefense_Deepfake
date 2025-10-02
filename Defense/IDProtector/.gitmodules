@@ -1,0 +1,21 @@
+[submodule "generation_methods/InstantID"]
+	path = generation_methods/InstantID
+	url = https://github.com/instantX-research/InstantID.git
+	branch = 042a57c75a265db302eea4e402265d7a803dc93d
+[submodule "generation_methods/IP_Adapter"]
+	path = generation_methods/IP_Adapter
+	url = https://github.com/tencent-ailab/IP-Adapter.git
+[submodule "generation_methods/PhotoMaker"]
+	path = generation_methods/PhotoMaker
+	url = https://github.com/TencentARC/PhotoMaker.git
+[submodule "modelling/DiT"]
+	path = modelling/DiT
+	url = https://github.com/facebookresearch/DiT.git
+	branch = ed81ce2229091fd4ecc9a223645f95cf379d582b
+[submodule "utils/FaceImageQuality"]
+	path = utils/FaceImageQuality
+	url = https://github.com/yangpei-comp/FaceImageQuality.git
+[submodule "utils/PerceptualSimilarity"]
+	path = utils/PerceptualSimilarity
+	url = https://github.com/SteffenCzolbe/PerceptualSimilarity.git
+	branch = 3729dd1fc7e7082c0c66f7dc74d119a78948cb17
