@@ -6,4 +6,4 @@ Thanks for code from [FaceSwapper](https://github.com/liqi-casia/FaceSwapper), [
 
 ## Defenser
 
-Thanks for code from [FaceShield](https://github.com/kuai-lab/iccv25_faceshield), [IDProtector]()
+Thanks for code from [FaceShield](https://github.com/kuai-lab/iccv25_faceshield), [IDProtector](https://github.com/showlab/IDProtector), [Anti-DreamBooth](https://github.com/VinAIResearch/Anti-DreamBooth)
